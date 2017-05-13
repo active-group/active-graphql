@@ -1,1 +1,0 @@
-{"version":3,"file":"\/Users\/marcoschneider\/Work\/active-graphql\/.cljs_rhino_repl\/active\/clojure\/record.js","sources":["record.cljc"],"lineCount":12,"mappings":";AAAA;;AAGA,mCAAA,nCAAMA,8EACHC,KAAKC,IAAIC;AADZ,AAIK,GAAU,gBAAWF,fAAKC;AAA1B;;AAAA,AACE,MAAO,KAAAE,MAAW,6CAAA,qFAA6CF,iDAAID","names":["active.clojure.record\/check-type","type","rec","accessor","js\/Error"]}
