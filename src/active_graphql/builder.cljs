@@ -12,17 +12,17 @@
 (defn select
   [arg-pairs]
   (into {} (map (fn [[k v]]
-                  [k (wrap-in-graphql-arg v)]) arg-pairs)))
+                  [(name k) (wrap-in-graphql-arg v)]) arg-pairs)))
 
 (defn project
   [args]
   (mapv (fn [key]
           (cond
             (vector? key) (let [[alias field] key]
-                            (g/atomic-field alias field nil))
+                            (g/atomic-field (name alias) (name field) nil))
             (g/field? key)
             key
-            :else (g/atomic-field nil key nil)))
+            :else (g/atomic-field nil (name key) nil)))
         args))
 
 (defn compile
@@ -37,9 +37,9 @@
   [& qs]
   (compile g/mutation qs))
 
-(defn request
+(defn field
   [the-name & args]
   (let [[sel args] (if (and (not (g/field? (first args))) (map? (first args)))
                      [(first args) (rest args)]
                      [nil args])]
-    (g/field* nil the-name (select sel) (project args))))
+    (g/field* nil (name the-name) (select sel) (project args))))
