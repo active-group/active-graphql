@@ -37,7 +37,7 @@ Example, using [the offical docs](http://graphql.org/learn/queries/):
 ;;   }
 ;; }
 
-(b/mutate (b/field "user" "firstName" "lastName"))
+(b/mutation (b/field "user" "firstName" "lastName"))
 ;; =>
 ;; mutation {
 ;;   user {
