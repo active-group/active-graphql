@@ -1,64 +1,45 @@
 (ns active-graphql.builder
-  (:require [active-graphql.core :as c]
-            [active.clojure.lens :as lens :include-macros true]))
+  (:require [active-graphql.core :as g]))
 
-;; Values
-(defn $int
+(defn wrap-in-graphql-arg
   [value]
-  (c/make-int-value value))
-(defn $float
-  [value]
-  (c/make-float-value value))
-(defn $boolean
-  [value]
-  (c/make-boolean-value value))
-(defn $string
-  [value]
-  (c/make-string-value value))
-(def $null (c/make-null-value))
-(defn $enum
-  [value]
-  (c/make-enum-value value))
-(defn $list
-  [& values]
-  values)
-(defn $object
-  [values-map]
-  (map (fn [[k v]]
-         (c/make-object-field k v)) values-map))
-
-(defn query
-  [selection-set & [opts]]
-  (let [variable-definitions (when-let [var-defs (:vars opts)]
-                               (map (fn [[k v]]
-                                      (c/make-variable-definition (c/make-variable k) v nil))
-                                    var-defs))]
-    (c/make-query (:name opts) variable-definitions nil selection-set)))
-
-(defn mutation
-  [selection-set & [opts]]
-  (let [variable-definitions (when-let [var-defs (:vars opts)]
-                               (map (fn [[k v]]
-                                      (c/make-variable-definition (c/make-variable k) v nil))
-                                    var-defs))]
-    (c/make-mutation (:name opts) variable-definitions nil selection-set)))
-
-(defn field
-  [name & [opts]]
-  (let [alias (when-let [a (:alias opts)]
-                (c/make-alias a))
-        args (when-let [args (:args opts)]
-               (map (fn [[k v]] (c/make-argument k v)) args))]
-    (c/make-field alias name args nil (:select opts))))
+  (cond
+    (integer? value) (g/int-arg value)
+    (float? value) (g/float-arg value)
+    (boolean? value) (g/boolean-arg value)
+    (string? value) (g/string-arg value)))
 
 (defn select
-  [& fields]
-  (map #(c/make-selection % nil nil) fields))
+  [arg-pairs]
+  (into {} (map (fn [[k v]]
+                  [k (wrap-in-graphql-arg v)]) arg-pairs)))
 
-(defn graphql
-  [& defs]
-  defs)
+(defn project
+  [args]
+  (mapv (fn [key]
+          (cond
+            (vector? key) (let [[alias field] key]
+                            (g/atomic-field alias field nil))
+            (g/field? key)
+            key
+            :else (g/atomic-field nil key nil)))
+        args))
 
-(defn build
-  [query]
-  (c/document->string query))
+(defn compile
+  [constr qs]
+  (g/print-document (g/graphql (constr "" qs))))
+
+(defn query
+  [& qs]
+  (compile g/query qs))
+
+(defn mutate
+  [& qs]
+  (compile g/mutation qs))
+
+(defn request
+  [the-name & args]
+  (let [[sel args] (if (and (not (g/field? (first args))) (map? (first args)))
+                     [(first args) (rest args)]
+                     [nil args])]
+    (g/field* nil the-name (select sel) (project args))))
