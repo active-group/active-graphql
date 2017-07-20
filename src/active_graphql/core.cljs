@@ -1,335 +1,236 @@
 (ns active-graphql.core
    (:require [active.clojure.record :as r :include-macros true]
-             [active.clojure.lens :as lens]
+             [active.clojure.lens :as lens]                 ;; necessary to define lenses for accessor (bug in active-clojure)
              [clojure.string :as string]))
 
+;; fixme: definitions? or only one definition? or split up into definition and fragmentdefinitions for better handling?
+(r/define-record-type document
+  (make-new-document definitions)
+  document?
+  [definitions document-definitions])
 
-;; 2.12 Directives
-(r/define-record-type directive
-  (make-directive name arguments) directive?
-  [name directive-name
-   arguments directive-arguments])
 
-(defn directive->string
-  [d]
-  ;; TODO
-  "")
+(r/define-record-type operation-definition
+  (make-new-operation-definition definition)
+  operation-definition?
+  [definition operation-definition-definition])
 
-(defn directives?
-  [xs]
-  (every? directive? xs))
 
-(defn directives->string
-  [ds]
-  ;; TODO
-  "")
+(r/define-record-type fragment-definition
+  (make-fragment-definition f-name type-condition directives selection-set)
+  fragment-definition?
+  [f-name fragment-name
+   type-condition fragment-type-condition
+   directives fragment-directives
+   selection-set fragment-selection-set])
 
-;; 2.11 Input Types
-(r/define-record-type named-type
-  (make-named-type name null?) named-type?
-  [name named-type-name
-   null? named-type-null?])
+(r/define-record-type operation-type-query
+  (make-operation-type-query operation-type q-name variable-definitions directives selection-set)
+  operation-type-query?
+  [operation-type operation-type-operation-type
+   q-name operation-type-query-name
+   variable-definitions operation-type-query-variable-definitions
+   directives operation-type-query-directives
+   (selection-set operation-type-query-selection-set operation-type-selection-set-lens)])
 
-(defn named-type->string
-  [nt]
-  (str (named-type-name nt)
-       (when-not (named-type-null? nt) "!")))
+(r/define-record-type field
+  (make-field f-alias f-name f-arguments directives selection-set)
+  field?
+  [f-alias field-alias
+   f-name field-name
+   f-arguments field-arguments
+   directives field-directives
+   selection-set field-selection-set])
 
-(r/define-record-type list-type
-  (make-list-type type null?) list-type?
-  [type list-type-type
-   null? list-type-null?])
+(r/define-record-type int-argument
+  (make-int-argument arg) int-argument?
+  [arg int-argument-arg])
 
-(declare type->string)
+(r/define-record-type float-argument
+  (make-float-argument arg) float-argument?
+  [arg float-argument-arg])
 
-(defn list-type->string
-  [lt]
-  (str "[" (type->string (list-type-type lt)) "]"
-       (when-not (list-type-null? lt) "!")))
+(r/define-record-type string-argument
+  (make-string-argument arg)
+  string-argument?
+  [arg string-argument-arg])
 
-(defn non-null-type?
-  [obj]
-  (cond
-    (named-type? obj) (not (named-type-null? obj))
-    (list-type? obj) (not (list-type-null? obj))
-    :else false))
+(r/define-record-type uuid-argument
+  (make-uuid-argument arg)
+  uuid-argument?
+  [arg uuid-argument-arg])
 
-(defn type?
-  [obj]
-  (or (named-type? obj) (list-type? obj) (non-null-type? obj)))
+ (r/define-record-type boolean-argument
+   (make-boolean-argument arg)
+   boolean-argument?
+   [arg boolean-argument-arg])
 
-(defn type->string
-  [t]
-  (cond
-    (named-type? t) (named-type->string t)
-    (list-type? t) (list-type->string t)))
-
-;; 2.10 Variables
-(r/define-record-type variable
-  (make-variable name) variable?
-  [name variable-name])
-
-(defn variable->string
-  [v]
-  (str "$" (variable-name v)))
-
-(r/define-record-type default-value
-  (make-default-value value) default-value?
-  [value default-value-value])
-
-(defn default-value->string
-  [dv]
-  (str "=" (default-value-value dv)))
-
-(r/define-record-type variable-definition
-  (make-variable-definition variable type ?default-value) variable-definition?
-  [variable variable-definition-variable
-   type variable-definition-type
-   ?default-value variable-definition-?default-value])
-
-(defn variable-definition->string
-  [vd]
-  (str (variable->string (variable-definition-variable vd))
-       ":"
-       (type->string (variable-definition-type vd))
-       (when-let [dv (variable-definition-?default-value vd)]
-         (default-value->string dv))))
-
-(defn variable-definitions?
-  [obj]
-  (and (sequential? obj) (every? variable-definition? obj)))
-
-(defn variable-definitions->string
-  [vds]
-  (apply str "(" (apply str (map variable-definition->string vds)) ")"))
-
-;; 2.9.1 Int Value
-(r/define-record-type int-value
-  (make-int-value value) int-value?
-  [value int-value-value])
-
-(defn int-value->string
-  [iv]
-  (str (int-value-value iv)))
-
-;; 2.9.2 Float Value
-(r/define-record-type float-value
-  (make-float-value value) float-value?
-  [value float-value-value])
-
-(defn float-value->string
-  [fv]
-  (str (float-value-value fv)))
-
-;; 2.9.3 Boolean Value
-(r/define-record-type boolean-value
-  (make-boolean-value value) boolean-value?
-  [value boolean-value-value])
-
-(defn boolean-value->string
-  [bv]
-  (str (boolean-value-value bv)))
-
-;; 2.9.4 String Value
-(r/define-record-type string-value
-  (make-string-value value) string-value?
-  [value string-value-value])
-
-(defn string-value->string
-  [sv]
-  (str "\"" (string-value-value sv) "\""))
-
-;; 2.9.5 Null Value
-(r/define-record-type null-value
-  (make-null-value) null-value?
-  [])
-
-(defn null-value->string
-  [nv]
-  "null")
-
-;; 2.9.6 Enum Value
-(r/define-record-type enum-value
-  (make-enum-value value) enum-value?
-  [value enum-value-value])
-
-(defn enum-value->string
-  [ev]
-  (str (enum-value-value ev)))
-
-(declare value?)
-
-;; 2.9.7 List Value
-(defn list-value?
-  [obj]
-  (or (nil? obj)
-      (and (seq obj) (every? value? obj))))
-
-(defn list-value->string
-  [lv]
-  (str "[" (apply str (interpose ", " (map value->string lv))) "]"))
-
-;; 2.9.8 Input Object Values
-(r/define-record-type object-field
-  (make-object-field name value) object-field?
-  [name object-field-name
-   value object-field-value])
-
-(defn object-field->string
-  [of]
-  (str (object-field-name of) ":" (object-field-value of)))
-
-(defn object-value?
-  [obj]
-  (or (nil? obj)
-      (and (seq obj) (every? object-field? obj))))
-
-(defn object-value->string
-  [ov]
-  (str "{" (map object-field->string ov) "}"))
-
-;; 2.9 Input Values
-(defn value?
-  [obj]
-  (or (variable? obj)
-      (int-value? obj)
-      (float-value? obj)
-      (string-value? obj)
-      (boolean-value? obj)
-      (null-value? obj)
-      (enum-value? obj)
-      (list-value? obj)
-      (object-value? obj)))
-
-(defn value->string
-  [obj]
-  (cond
-    (variable? obj) (variable->string obj)
-    (int-value? obj) (int-value->string obj)
-    (float-value? obj) (float-value->string obj)
-    (string-value? obj) (string-value->string obj)
-    (boolean-value? obj) (boolean-value->string obj)
-    (null-value? obj) (null-value->string obj)
-    (enum-value? obj) (enum-value->string obj)
-    (list-value? obj) (list-value->string obj)
-    (object-value? obj) (object-field->string obj)))
-
-;; Skipping Fragments for now
-
-;; 2.7 Field Alias
-(r/define-record-type alias
-  (make-alias name) alias?
-  [name alias-name])
-
-(defn alias->string
-  [a]
-  (str (alias-name a) ":"))
-
-;; 2.6 Arguments
 (r/define-record-type argument
-  (make-argument name value) argument?
-  [name argument-name
+  (make-argument a-name value)
+  argument?
+  [a-name argument-name
    value argument-value])
 
-(defn argument->string
-  [a]
-  (str (argument-name a) ": " (value->string (argument-value a))))
+(r/define-record-type result
+  (make-result data errors)
+  result?
+  [(data result-data result-data-lens)
+   errors result-errors])
 
-(defn arguments?
-  [xs]
-  (every? argument? xs))
+(defn valid-result? [result]
+  (and (result? result)
+       (empty? (result-errors result))))
 
-(defn arguments->string
-  [as]
-  (str "(" (apply str (interpose ", " (map argument->string as))) ")"))
+;; should not be here in graphql
+;; FIXME HARD: test if string nicht angemeldet occurs.
+;; need to define an appropiate error message format
+(defn authentication-error-result? [result]
+  (and (result? result)
+       (string/includes? (str (result-errors result)) "Nicht angemeldet!")))
 
-;; 2.4 Selection Sets
-(r/define-record-type selection
-  (make-selection field fragment-spread inline-fragment) selection?
-  [field selection-field
-   fragment-spread selection-fragment-spread
-   inline-fragment selection-inline-fragment])
+(defn int-arg
+  [arg]
+  (make-int-argument arg))
 
-(defn selection->string
-  [sel]
-  (field->string (selection-field sel)
-       ;; NOTE Skip fragments for now
-       ))
+(defn float-arg
+  [arg]
+  (make-float-argument arg))
 
-(defn selection-set?
-  [obj]
-  (and (seq obj) (every? selection? obj)))
+(defn string-arg
+  [arg]
+  (make-string-argument arg))
 
-(defn selection-set->string
-  [sel-set]
-  (str "{" (apply str (interpose "\n" (map selection->string sel-set))) "}"))
+(defn uuid-arg
+  [arg]
+  (make-uuid-argument arg))
 
-;; 2.5 Fields
-(r/define-record-type field
-  (make-field ?alias name ?arguments ?directives ?selection-set) field?
-  [?alias field-?alias
-   name field-name
-   (?arguments field-?arguments field-?arguments-lens)
-   (?directives field-?directives field-?directives-lens)
-   (?selection-set field-?selection-set field-?selection-set-lens)])
 
-(defn field->string
-  [f]
-  (str (when-let [alias (field-?alias f)]
-         (alias->string alias))
-       (field-name f)
-       (when-let [args (field-?arguments f)]
-         (arguments->string args))
-       ;; Skip directives for now
-       (when-let [sel-set (field-?selection-set f)]
-         (selection-set->string sel-set))))
+(defn boolean-arg
+  [arg]
+  (make-boolean-argument arg))
 
-;; 2.3 Operations
-(r/define-record-type operation-definition
-  (make-operation-definition type ?name ?variable-definitions ?directives selection-set)
-  operation-definition?
-  [type operation-definition-type
-   (?name operation-definition-?name operation-definition-?name-lens)
-   (?variable-definitions operation-definition-?variable-definitions operation-definition-?variable-definitions-lens)
-   (?directives operation-definition-?directives operation-definition-?directives-lens)
-   selection-set operation-definition-selection-set])
+(defn arguments-from-map
+  [args]
+  (map (fn [entry]
+         (make-argument (first entry) (second entry)))
+       (seq args)))
 
-(defn make-query
-  [?name ?variable-definitions ?directives selection-set]
-  (make-operation-definition "query" ?name ?variable-definitions ?directives selection-set))
+#_(defn selection [selections]
+  (make-selection-set selections))
 
-(defn make-mutation
-  [?name ?variable-definitions ?directives selection-set]
-  (make-operation-definition "mutation" ?name ?variable-definitions ?directives selection-set))
+(defn field*
+  [alias name arguments selection-list]
+  (make-field alias name (arguments-from-map arguments) nil (when-not (nil? selection-list)
+                                                              nil
+                                                              selection-list)))
 
-(defn operation-definition->string
-  [op-def]
-  (str (operation-definition-type op-def)
-       (when-let [nom (operation-definition-?name op-def)]
-         (str "{\n" nom " "))
-       (when-let [var-defs (operation-definition-?variable-definitions op-def)]
-         (variable-definitions->string var-defs))
-       ;; NOTE Skip directives for now
-       (selection-set->string (operation-definition-selection-set op-def))
-       (when (operation-definition-?name op-def)
-         "\n}")))
+(defn atomic-field
+  [alias name arguments]
+  (field* alias name arguments nil))
 
-;; 2.2 Query Document
-(defn definition?
-  [obj]
-  (operation-definition? obj))
+;; a query is a operation-definition in term of the graqhl-grammar
+(defn query
+  [name selections]
+  (make-new-operation-definition (make-operation-type-query "query" name nil nil selections)))
 
-(defn definition->string
-  [def]
+(defn mutation
+  [name selections]
+  (make-new-operation-definition (make-operation-type-query "mutation" name nil nil selections)))
+
+(defn graphql
+  [& definitions]
+  (make-new-document definitions))
+
+(defn add-selections-to-query-document
+  [doc-query add-selections]
+  (let [doc-defs (document-definitions doc-query)
+        op-def (operation-definition-definition (first doc-defs))
+        selections (lens/yank op-def operation-type-selection-set-lens)]
+    (graphql (make-new-operation-definition
+              (lens/shove op-def operation-type-selection-set-lens (concat selections add-selections))))))
+
+(defn escape-string-for-grapqhl
+  [string-arg]
+  string-arg
+  #_(if string-arg
+    (string/escape string-arg
+                   {"\"" "\\\\\\\""
+                    "\\" "\\\\"
+                    "\n" " "
+                    "\r" " "
+                    "\r\n" ""
+                    })
+    ""))
+
+(defn print-arg-value
+  [arg-value]
   (cond
-    (operation-definition? def) (operation-definition->string def)
-    ;; NOTE Skip fragments for now
-    ))
+    (int-argument? arg-value) (if arg-value (str (int-argument-arg arg-value)) "")
+    (float-argument? arg-value) (if arg-value (str (float-argument-arg arg-value)) "")
+    (string-argument? arg-value) (if arg-value
+                                   (str "\""
+                                        (string-argument-arg arg-value)
+                                        #_(escape-string-for-grapqhl (string-argument-arg arg-value))
+                                        "\"")
+                                   "")
+    (uuid-argument? arg-value) (if arg-value
+                                 (string/escape (uuid-argument-arg arg-value) {"\"" "\\\""})
+                                 "")
+    (boolean-argument? arg-value) (str (boolean-argument-arg arg-value))))
 
-(defn document?
-  [xs]
-  (and (seq xs) (every? definition? xs)))
+(defn print-argument
+  [argument]
+  (str (argument-name argument) ": " (print-arg-value (argument-value argument)) ))
 
-(defn document->string
-  [doc]
-  (apply str (map definition->string doc)))
+(declare print-field)
+(defn print-selection
+  [selection]
+  (cond
+    (field? selection) (print-field selection)))
+
+(defn print-selection-set
+  [selection-set]
+  (when (seq selection-set)
+    (str "{ "
+         (string/join "\n" (map print-selection selection-set))
+         " }")))
+
+(defn print-field
+  [field]
+  (str
+   (if-let [alias (field-alias field)]
+     (str alias ":")
+     "")
+   (field-name field)
+   (if (empty? (field-arguments field))
+     ""
+     (str "(" (string/join "," (map print-argument (field-arguments field))) ")") )
+   " "
+   (print-selection-set (field-selection-set field))))
+
+(defn print-operation-type-query
+  [operation-type-query]
+  (str (when-let [qt (operation-type-operation-type operation-type-query)]
+         (str qt)) " " (operation-type-query-name operation-type-query) " "
+       (print-selection-set (operation-type-query-selection-set operation-type-query))))
+
+(defn print-operation-definition
+  [definition]
+  (cond
+    (list? definition) (print-selection-set definition)
+    (operation-type-query? definition) (print-operation-type-query definition)))
+
+
+(defn print-document-definition
+  [definition]
+  (cond
+    (operation-definition? definition)
+    (print-operation-definition
+     (operation-definition-definition definition))
+    (fragment-definition? definition) "fragment"))
+
+
+(defn print-document
+  [document]
+  (string/join "\n" (map print-document-definition (document-definitions document))))
+
