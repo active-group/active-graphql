@@ -1,6 +1,6 @@
 # active-graphql
 
-A ClojureScript library for programmatically building GraphQL query strings.
+A ClojureScript library for programmatically building GraphQL query strings. Inlcudes a "micro" DSL for constructing more readable queries.
 
 Example, using [the offical docs](http://graphql.org/learn/queries/):
 
@@ -8,34 +8,66 @@ Example, using [the offical docs](http://graphql.org/learn/queries/):
 (ns your.name.space
   (:require [active-graphql.builder :as b]))
 
+(b/query (b/request "user" "firstName" "lastName"))
+;; =>
+;; query {
+;;   user {
+;;     firstName
+;;     lastName
+;;   }
+;; }
 
-(def hero-name-query (b/graphql
-                      (b/query
-                       (b/select (b/field  "name"))
-                       {:name "hero"})))
+(b/mutate (b/request "user" "firstName" "lastName"))
+;; =>
+;; mutation {
+;;   user {
+;;     firstName
+;;     lastName
+;;   }
+;; }
 
-(b/build hero-name-query)  ;; => "query { hero { name }}", ignoring insignificant whitespace/newlines
+(b/query (b/request "user" {"id" 42} "firstName"))
+;; =>
+;; query {
+;;   user(id: 42) {
+;;     firstName
+;;   }
+;; }
 
+(b/query (b/request "user" {"id" 42} "firstName")
+         (b/request "hardware" "type" "model"))
+;; =>
+;; query {
+;;   user(id: 42) {
+;;     firstName
+;;   }
+;;   hardware {
+;;     type
+;;     model
+;;   }
+;; }
 
-(def hero-and-friend (b/graphql
-                      (b/query (b/select (b/field "name")
-                                         (b/field "friends"
-                                                  {:select (b/select (b/field "name"))}))
-                               {:name "hero"})))
-
-(b/build hero-and-friend)  ;; "query { hero {name firends { name }}}"
-
-
-;; Arguments example
-(def hero-arguments-query
-  (b/graphql
-   (b/query
-    (b/select
-     (b/field "human" {:args [["id" (b/$string "1000")]]
-                       :select (b/select (b/field "name")
-                                         (b/field "height"))})))))
-
-(b/build hero-arguments-query)  ;; => "query { human(id: \"1000\") {name height}}"
+(b/query (b/request "user" {"id" 42}
+                    "firstName"
+                    "other")
+         (b/request "person"
+                    {"firstName" "Marco"}
+                    (b/request "address"
+                               "street"
+                               "zipCode")))
+;; =>
+;; query {
+;;   user(id: 42) {
+;;     firstName
+;;     other
+;;   }
+;;   person(firstName: "Marco") {
+;;     address {
+;;       street
+;;       zipCode
+;;     }
+;;   }
+;; }
 
 ```
 
