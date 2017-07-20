@@ -33,7 +33,7 @@
   [& qs]
   (compile g/query qs))
 
-(defn mutate
+(defn mutation
   [& qs]
   (compile g/mutation qs))
 
