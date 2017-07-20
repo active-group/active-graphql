@@ -5,10 +5,10 @@ A ClojureScript library for programmatically building GraphQL query strings. Inl
 Example, using [the offical docs](http://graphql.org/learn/queries/):
 
 ```Clojure
-(ns your.name.space
-  (:require [active-graphql.builder :as b]))
+(ns active-graphql.examples
+  (:require [active-graphql.builder :as b])
 
-(b/query (b/request "user" "firstName" "lastName"))
+(b/query (b/field "user" "firstName" "lastName"))
 ;; =>
 ;; query {
 ;;   user {
@@ -17,7 +17,27 @@ Example, using [the offical docs](http://graphql.org/learn/queries/):
 ;;   }
 ;; }
 
-(b/mutate (b/request "user" "firstName" "lastName"))
+;; Keywords can be used instead of strings
+(b/query (b/field :user :firstName :lastName))
+;; =>
+;; query {
+;;   user {
+;;     firstName
+;;     lastName
+;;   }
+;; }
+
+;; Aliasing
+(b/query (b/field :user {:id 42}
+                  [:name :firstName]))
+;; =>
+;; query {
+;;   user {
+;;     name: firstName
+;;   }
+;; }
+
+(b/mutate (b/field "user" "firstName" "lastName"))
 ;; =>
 ;; mutation {
 ;;   user {
@@ -26,7 +46,7 @@ Example, using [the offical docs](http://graphql.org/learn/queries/):
 ;;   }
 ;; }
 
-(b/query (b/request "user" {"id" 42} "firstName"))
+(b/query (b/field "user" {"id" 42} "firstName"))
 ;; =>
 ;; query {
 ;;   user(id: 42) {
@@ -34,8 +54,9 @@ Example, using [the offical docs](http://graphql.org/learn/queries/):
 ;;   }
 ;; }
 
-(b/query (b/request "user" {"id" 42} "firstName")
-         (b/request "hardware" "type" "model"))
+;; Nesting
+(b/query (b/field "user" {"id" 42} "firstName")
+         (b/field "hardware" "type" "model"))
 ;; =>
 ;; query {
 ;;   user(id: 42) {
@@ -47,15 +68,15 @@ Example, using [the offical docs](http://graphql.org/learn/queries/):
 ;;   }
 ;; }
 
-(b/query (b/request "user" {"id" 42}
-                    "firstName"
-                    "other")
-         (b/request "person"
-                    {"firstName" "Marco"}
-                    (b/request "address"
-                               "street"
-                               "zipCode")))
-;; =>
+;; Deeper nesting
+(b/query (b/field "user" {"id" 42}
+                  "firstName"
+                  "other")
+         (b/field "person"
+                  {"firstName" "Marco"}
+                  (b/field "address"
+                           "street"
+                           "zipCode")))
 ;; query {
 ;;   user(id: 42) {
 ;;     firstName
