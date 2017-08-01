@@ -2,7 +2,9 @@
 
 A ClojureScript library for programmatically building GraphQL query strings. Inlcudes a "micro" DSL for constructing more readable queries.
 
-Example, using [the offical docs](http://graphql.org/learn/queries/):
+## Usage
+
+Some examples for constructing queries using `active-graphql`:
 
 ```Clojure
 (ns active-graphql.examples
@@ -28,7 +30,7 @@ Example, using [the offical docs](http://graphql.org/learn/queries/):
 ;; }
 
 ;; Aliasing
-(b/query (b/field :user {:id 42}
+(b/query (b/field :user
                   [:name :firstName]))
 ;; =>
 ;; query {
@@ -46,6 +48,7 @@ Example, using [the offical docs](http://graphql.org/learn/queries/):
 ;;   }
 ;; }
 
+;; Utilizing arguments to a query:
 (b/query (b/field "user" {"id" 42} "firstName"))
 ;; =>
 ;; query {
@@ -92,9 +95,6 @@ Example, using [the offical docs](http://graphql.org/learn/queries/):
 
 ```
 
-## Usage
-
-FIXME
 
 ## License
 
