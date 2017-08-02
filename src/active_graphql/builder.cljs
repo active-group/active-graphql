@@ -27,7 +27,7 @@
 
 (defn compile
   [constr qs]
-  (g/print-document (g/graphql (constr "" qs))))
+  (g/graphql (constr "" qs)))
 
 (defn query
   [& qs]
