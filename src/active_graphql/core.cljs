@@ -81,13 +81,6 @@
   (and (result? result)
        (empty? (result-errors result))))
 
-;; should not be here in graphql
-;; FIXME HARD: test if string nicht angemeldet occurs.
-;; need to define an appropiate error message format
-(defn authentication-error-result? [result]
-  (and (result? result)
-       (string/includes? (str (result-errors result)) "Nicht angemeldet!")))
-
 (defn int-arg
   [arg]
   (make-int-argument arg))
