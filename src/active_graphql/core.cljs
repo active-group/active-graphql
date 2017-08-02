@@ -108,9 +108,6 @@
          (make-argument (first entry) (second entry)))
        (seq args)))
 
-#_(defn selection [selections]
-  (make-selection-set selections))
-
 (defn field*
   [alias name arguments selection-list]
   (make-field alias name (arguments-from-map arguments) nil (when-not (nil? selection-list)
