@@ -219,8 +219,11 @@
      (operation-definition-definition definition))
     (fragment-definition? definition) "fragment"))
 
-
 (defn print-document
   [document]
   (string/join "\n" (map print-document-definition (document-definitions document))))
 
+(defn create-request
+  [document]
+  (let [doc (print-document document)]
+    {query (.stringify js/JSON doc)}))
