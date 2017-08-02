@@ -46,20 +46,43 @@ importantly, provides the functions `field`, `query` and `mutation` (refer to
         args))
 
 (defn compile
+  "Takes a graphql method contructor function (either `query` or `mutation`)
+  and returns a grapqhl document with the fields `qs` that can be printed via
+  `print-document`."
   [constr qs]
   (g/graphql (constr "" qs)))
 
 (defn query
+  "Takes an arbitrary number of `field` and wraps them in a query document."
   [& qs]
   (compile g/query qs))
 
 (defn mutation
+  "Takes an arbitrary number of `field` and wraps them in a mutation document."
   [& qs]
   (compile g/mutation qs))
 
 (defn field
+  "Takes the name of a graphql query or mutation `the-name` and a number of
+  args. `args` can be elements of type keyword, string or `field`s themselves."
   [the-name & args]
   (let [[sel args] (if (and (not (g/field? (first args))) (map? (first args)))
                      [(first args) (rest args)]
                      [nil args])]
     (g/field* nil (name the-name) (select sel) (project args))))
+
+(defn request
+  "`request` takes a graphql `document` and returns a stringified version ready
+  for sending to an endpoint.
+
+  Examples:
+
+  ```
+  (request (query (field :foo :bar)))
+  ;; => \"\\\"query\\\": \\\"query { foo { bar }}\\\"\"
+
+  (request (query (field :foo {:obj (stringify {:name \"wilhelm\"})} :bar)))
+  ;; => \"\\\"query\\\": \\\"query { foo(obj: \\\\\\\"foo\\\\\\\":\\\\\\\"bar\\\\\\\"}\\\\\\\") { bar }\\\"
+  ```"
+  [document]
+  (g/create-request document))

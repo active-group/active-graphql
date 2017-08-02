@@ -220,10 +220,19 @@
     (fragment-definition? definition) "fragment"))
 
 (defn print-document
+  "Takes a query document and converts it into a query string."
   [document]
   (string/join "\n" (map print-document-definition (document-definitions document))))
 
+(defn stringify
+  "Takes an arbitrary clojurescript value and returns a JSON.stringify'ed string
+  representation of it."
+  [obj]
+  (.stringify js/JSON (clj->js obj)))
+
 (defn create-request
+  "Takes a query document and returns a stringified (e.g. fully escaped version
+  of it), ready to send to a grapqhl endpoint."
   [document]
   (let [doc (print-document document)]
-    {query (.stringify js/JSON doc)}))
+    (stringify {"query" doc})))
