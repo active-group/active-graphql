@@ -5,7 +5,7 @@
 
 ;; fixme: definitions? or only one definition? or split up into definition and fragmentdefinitions for better handling?
 (r/define-record-type document
-  (make-new-document definitions)
+  (make-document definitions)
   document?
   [definitions document-definitions])
 
@@ -132,7 +132,7 @@
 
 (defn graphql
   [& definitions]
-  (make-new-document definitions))
+  (make-document definitions))
 
 (defn add-selections-to-query-document
   [doc-query add-selections]
