@@ -66,11 +66,16 @@ importantly, provides the functions `field`, `query` and `mutation` (refer to
 
 (defn field
   "Takes the name of a graphql query or mutation `the-name` and a number of
-  args. `args` can be elements of type keyword, string or `field`s themselves."
+  args. `args` can be elements of type keyword, string or `field`s themselves.
+  If `the-name` is a vector, it's first element is the alias for the query, the
+  second one the 'real' name."
   [the-name & args]
   (let [[sel args] (if (and (not (g/field? (first args))) (map? (first args)))
                      [(first args) (rest args)]
-                     [nil args])]
+                     [nil args])
+        [alias nom] (if (vector? the-name)
+                      [(first the-name) (second the-name)]
+                      [nil the-name])]
     (g/field* nil (name the-name) (select sel) (project args))))
 
 (defn request
