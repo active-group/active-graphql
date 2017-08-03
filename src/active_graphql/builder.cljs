@@ -6,14 +6,16 @@ importantly, provides the functions `field`, `query` and `mutation` (refer to
             [active.clojure.condition :as c]))
 
 (defn ^{:private true} wrap-in-graphql-arg
-  "Takes a `value` in `#{int float boolean string}` and wraps it in a graphql
-  value."
+  "Takes a `value` in `#{int float boolean string map}` and wraps it in a
+  graphql value. When encountering a map, convert it into a Javascript object
+  and [[active-grpahl.core/stringify]] it."
   [value]
   (cond
     (integer? value) (g/int-arg value)
     (float? value) (g/float-arg value)
     (boolean? value) (g/boolean-arg value)
     (string? value) (g/string-arg value)
+    (map? value) (g/stringify (clj->js value))
     :else (c/assertion-violation `wrap-in-graphql-arg
                                  "value of unsupported type" value)))
 

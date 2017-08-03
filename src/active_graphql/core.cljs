@@ -151,9 +151,7 @@
     (int-argument? arg-value) (if arg-value (str (int-argument-arg arg-value)) "")
     (float-argument? arg-value) (if arg-value (str (float-argument-arg arg-value)) "")
     (string-argument? arg-value) (if arg-value (stringify (string-argument-arg arg-value)))
-    (uuid-argument? arg-value) (if arg-value
-                                 (string/escape (uuid-argument-arg arg-value) {"\"" "\\\""})
-                                 "")
+    (uuid-argument? arg-value) (if arg-value (stringify (uuid-argument-arg arg-value)))
     (boolean-argument? arg-value) (str (boolean-argument-arg arg-value))))
 
 (defn print-argument
