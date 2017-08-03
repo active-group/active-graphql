@@ -15,7 +15,7 @@ importantly, provides the functions `field`, `query` and `mutation` (refer to
     (float? value) (g/float-arg value)
     (boolean? value) (g/boolean-arg value)
     (string? value) (g/string-arg value)
-    (map? value) (g/stringify (clj->js value))
+    (map? value) (g/string-arg (g/stringify value))
     :else (c/assertion-violation `wrap-in-graphql-arg
                                  "value of unsupported type" value)))
 
