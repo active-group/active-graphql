@@ -139,30 +139,18 @@
     (graphql (make-new-operation-definition
               (lens/shove op-def operation-type-selection-set-lens (concat selections add-selections))))))
 
-(defn escape-string-for-grapqhl
-  [string-arg]
-  string-arg
-  #_(if string-arg
-    (string/escape string-arg
-                   {"\"" "\\\\\\\""
-                    "\\" "\\\\"
-                    "\n" " "
-                    "\r" " "
-                    "\r\n" ""
-                    })
-    ""))
+(defn stringify
+   "Takes an arbitrary clojurescript value and returns a JSON.stringify'ed string
+  representation of it."
+   [obj]
+   (.stringify js/JSON (clj->js obj)))
 
 (defn print-arg-value
   [arg-value]
   (cond
     (int-argument? arg-value) (if arg-value (str (int-argument-arg arg-value)) "")
     (float-argument? arg-value) (if arg-value (str (float-argument-arg arg-value)) "")
-    (string-argument? arg-value) (if arg-value
-                                   (str "\""
-                                        (string-argument-arg arg-value)
-                                        #_(escape-string-for-grapqhl (string-argument-arg arg-value))
-                                        "\"")
-                                   "")
+    (string-argument? arg-value) (if arg-value (stringify (string-argument-arg arg-value)))
     (uuid-argument? arg-value) (if arg-value
                                  (string/escape (uuid-argument-arg arg-value) {"\"" "\\\""})
                                  "")
@@ -223,12 +211,6 @@
   "Takes a query document and converts it into a query string."
   [document]
   (string/join "\n" (map print-document-definition (document-definitions document))))
-
-(defn stringify
-  "Takes an arbitrary clojurescript value and returns a JSON.stringify'ed string
-  representation of it."
-  [obj]
-  (.stringify js/JSON (clj->js obj)))
 
 (defn create-request
   "Takes a query document and returns a stringified (e.g. fully escaped version
