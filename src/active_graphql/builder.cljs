@@ -74,9 +74,9 @@ importantly, provides the functions `field`, `query` and `mutation` (refer to
                      [(first args) (rest args)]
                      [nil args])
         [alias nom] (if (vector? the-name)
-                      [(first the-name) (second the-name)]
-                      [nil the-name])]
-    (g/field* alias (name nom) (select sel) (project args))))
+                      [(name (first the-name))  (name (second the-name))]
+                      [nil (name the-name) ])]
+    (g/field* alias nom (select sel) (project args))))
 
 (defn request
   "`request` takes a graphql `document` and returns a stringified version ready

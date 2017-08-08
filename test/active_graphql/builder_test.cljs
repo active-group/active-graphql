@@ -111,3 +111,10 @@
              (apply b/field :user [:firstName :lastName])))
     (t/is (= (b/field :user {:id 42} :firstName :lastName)
              (apply b/field :user {:id 42} [:firstName :lastName])))))
+
+(t/deftest field-with-alias
+  (let [expectation
+        (c/make-field "alias-foo" "foo" (list) nil [])]
+       (t/testing "using alias"
+         (t/is (= expectation
+                  (b/field [:alias-foo :foo]))))))
