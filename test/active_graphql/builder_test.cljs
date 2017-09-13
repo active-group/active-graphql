@@ -3,6 +3,26 @@
             [active-graphql.core :as c]
             [cljs.test :as t :include-macros true]))
 
+(t/deftest wrap-in-graphql-arg-test
+  (t/testing "with valid arguments"
+    (t/is (= (c/int-arg 1) (b/wrap-in-graphql-arg 1)))
+    (t/is (= (c/float-arg 1.2) (b/wrap-in-graphql-arg 1.2)))
+    (t/is (= (c/boolean-arg true) (b/wrap-in-graphql-arg true)))
+    (t/is (= (c/boolean-arg false) (b/wrap-in-graphql-arg false)))
+    (t/is (= (c/string-arg "foobar") (b/wrap-in-graphql-arg "foobar")))
+    (t/is (= (c/string-arg "{\"foo\":\"bar\"}") (b/wrap-in-graphql-arg {:foo "bar"}))))
+  (t/testing "with invalid arguments, it should throw a js error with the correct message"
+    (t/testing "testing with nil"
+      (try (b/wrap-in-graphql-arg nil)
+           (catch js/Error e
+             (t/is (= (.-message e)
+                      "wrap-in-graphql-arg: expected valid value but got nil")))))
+    (t/testing "testing with unsupported value type"
+      (try (b/wrap-in-graphql-arg #{"a" "b"})
+           (catch js/Error e
+             (t/is (= (.-message e)
+                      "wrap-in-graphql-arg: value of unsupported type (got #{\"a\" \"b\"})")))))))
+
 (t/deftest simple-field-test
   (let [expectation (c/make-field nil "user" '() nil
                                   [(c/make-field nil "firstName" '() nil nil)
