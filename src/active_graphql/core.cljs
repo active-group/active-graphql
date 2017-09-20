@@ -127,6 +127,10 @@
   [name selections]
   (make-new-operation-definition (make-operation-type-query "mutation" name nil nil selections)))
 
+(defn subscription
+  [name selection]
+  (make-new-operation-definition (make-operation-type-query "subscription" name nil nil [selection])))
+
 (defn graphql
   [& definitions]
   (make-document definitions))

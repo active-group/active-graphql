@@ -64,6 +64,11 @@ importantly, provides the functions `field`, `query` and `mutation` (refer to
   [& qs]
   (compile g/mutation qs))
 
+(defn subscription
+  "Takes a single `field` and wraps it in a subscription document."
+  [q]
+  (compile g/subscription q))
+
 (defn field
   "Takes the name of a graphql query or mutation `the-name` and a number of
   args. `args` can be elements of type keyword, string or `field`s themselves.
