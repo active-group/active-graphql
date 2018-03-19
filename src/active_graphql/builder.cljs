@@ -18,6 +18,7 @@ importantly, provides the functions `field`, `query` and `mutation` (refer to
     (boolean? value) (g/boolean-arg value)
     (string? value) (g/string-arg value)
     (map? value) (g/string-arg (g/stringify value))
+    (seq? value) (g/list-arg (map wrap-in-graphql-arg value))
     :else (throw (js/Error. (str "wrap-in-graphql-arg: value of unsupported type (got " value ")")))))
 
 (defn select

@@ -61,6 +61,11 @@
    boolean-argument?
    [arg boolean-argument-arg])
 
+(r/define-record-type list-argument
+  (make-list-argument arg)
+  list-argument?
+  [arg list-argument-arg])
+
 (r/define-record-type argument
   (make-argument a-name value)
   argument?
@@ -89,7 +94,9 @@
   [arg]
   (make-string-argument arg))
 
+(defn list-arg
   [arg]
+  (make-list-argument arg))
 
 
 (defn boolean-arg
@@ -149,7 +156,12 @@
     (int-argument? arg-value) (if arg-value (str (int-argument-arg arg-value)) "")
     (float-argument? arg-value) (if arg-value (str (float-argument-arg arg-value)) "")
     (string-argument? arg-value) (if arg-value (stringify (string-argument-arg arg-value)))
-    (boolean-argument? arg-value) (str (boolean-argument-arg arg-value))))
+    (boolean-argument? arg-value) (str (boolean-argument-arg arg-value))
+    (list-argument? arg-value) (str "[" (apply str
+                                               (clojure.string/join ","
+                                                                    (map print-arg-value (list-argument-arg arg-value)))
+                                     "]"))
+    ))
 
 (defn print-argument
   [argument]
