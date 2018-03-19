@@ -11,6 +11,7 @@ importantly, provides the functions `field`, `query` and `mutation` (refer to
   and [[active-grpahl.core/stringify]] it."
   [value]
   (cond
+    ;; FIXME: Nil is allow according to graphql-spec, isn't it?  http://facebook.github.io/graphql/October2016/#sec-Null-Value
     (nil? value) (throw (js/Error. "wrap-in-graphql-arg: expected valid value but got nil"))
     (integer? value) (g/int-arg value)
     (float? value) (g/float-arg value)
