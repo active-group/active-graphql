@@ -10,7 +10,9 @@
     (t/is (= (c/boolean-arg true) (b/wrap-in-graphql-arg true)))
     (t/is (= (c/boolean-arg false) (b/wrap-in-graphql-arg false)))
     (t/is (= (c/string-arg "foobar") (b/wrap-in-graphql-arg "foobar")))
-    (t/is (= (c/string-arg "{\"foo\":\"bar\"}") (b/wrap-in-graphql-arg {:foo "bar"}))))
+    (t/is (= (c/string-arg "{\"foo\":\"bar\"}") (b/wrap-in-graphql-arg {:foo "bar"})))
+    (t/is (= (c/list-arg (list (c/int-arg 23) (c/int-arg 42))) (b/wrap-in-graphql-arg (list 23 42 ))))
+    )
   (t/testing "with invalid arguments, it should throw a js error with the correct message"
     (t/testing "testing with nil"
       (try (b/wrap-in-graphql-arg nil)
@@ -98,6 +100,19 @@
         (t/is (= expectation
                  (b/field :user {:id 42} :firstName :lastName)))))))
 
+(t/deftest list-argument-test
+  (let [expectation
+        (c/make-field nil "user"
+                      (list
+                        (c/make-argument "id-lis" (c/list-arg (list (c/int-arg 23) (c/int-arg 42)))))
+                      nil
+                      [(c/make-field nil "firstName" '() nil nil)
+                       (c/make-field nil "lastName" '() nil nil)])]
+    (t/testing "with list argument"
+      (t/testing "using keywords"
+        (t/is (= expectation
+                 (b/field :user {:id-lis (list 23 42)} :firstName :lastName)))))))
+
 (t/deftest nested-arguments-test
   (let [expectation
         (c/make-field nil "user"
@@ -138,3 +153,4 @@
        (t/testing "using alias"
          (t/is (= expectation
                   (b/field [:alias-foo :foo]))))))
+
