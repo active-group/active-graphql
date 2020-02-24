@@ -3,12 +3,12 @@
   :url "https://github.com/active-group/active-graphql"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[org.clojure/clojure "1.8.0"]
-                 [org.clojure/clojurescript "1.9.521"]
-                 [active-clojure "0.17.0"]]
+  :dependencies [[org.clojure/clojure "1.9.0"]
+                 [org.clojure/clojurescript "1.10.439"]
+                 [active-clojure "0.27.0" :exclusions [[active-clojure]]]]
 
   :plugins [[lein-cljsbuild "1.1.6"]
-            [lein-doo "0.1.6"]]
+            [lein-doo "0.1.10"]]
 
   :profiles {;; Make sure nrepl is working smoothly from within CIDER when
              ;; working with cljs.

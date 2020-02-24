@@ -2,8 +2,7 @@
 importantly, provides the functions `field`, `query` and `mutation` (refer to
 `active-graphql.examples` for usage)."}
     active-graphql.builder
-  (:require [active-graphql.core :as g]
-            [active.clojure.condition :as c]))
+  (:require [active-graphql.core :as g]))
 
 (defn wrap-in-graphql-arg
   "Takes a `value` in `#{int float boolean string map}` and wraps it in a

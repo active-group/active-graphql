@@ -1,6 +1,6 @@
 (ns active-graphql.core
    (:require [active.clojure.record :as r :include-macros true]
-             [active.clojure.lens :as lens]                 ;; necessary to define lenses for accessor (bug in active-clojure)
+             [active.clojure.lens :as lens]
              [clojure.string :as string]))
 
 ;; fixme: definitions? or only one definition? or split up into definition and fragmentdefinitions for better handling?
@@ -31,7 +31,7 @@
    q-name operation-type-query-name
    variable-definitions operation-type-query-variable-definitions
    directives operation-type-query-directives
-   (selection-set operation-type-query-selection-set operation-type-selection-set-lens)])
+   selection-set operation-type-query-selection-set])
 
 (r/define-record-type field
   (make-field f-alias f-name f-arguments directives selection-set)
@@ -75,7 +75,7 @@
 (r/define-record-type result
   (make-result data errors)
   result?
-  [(data result-data result-data-lens)
+  [data result-data
    errors result-errors])
 
 (defn valid-result? [result]
@@ -140,9 +140,9 @@
   [doc-query add-selections]
   (let [doc-defs (document-definitions doc-query)
         op-def (operation-definition-definition (first doc-defs))
-        selections (lens/yank op-def operation-type-selection-set-lens)]
+        selections (lens/yank op-def operation-type-query-selection-set)]
     (graphql (make-new-operation-definition
-              (lens/shove op-def operation-type-selection-set-lens (concat selections add-selections))))))
+               (lens/shove op-def operation-type-query-selection-set (concat selections add-selections))))))
 
 (defn stringify
    "Takes an arbitrary clojurescript value and returns a JSON.stringify'ed string
