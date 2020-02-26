@@ -1,5 +1,5 @@
 (ns active-graphql.core
-   (:require [active.clojure.record :as r :include-macros true]
+   (:require [active.clojure.cljs.record :as r :include-macros true]
              [active.clojure.lens :as lens]
              [clojure.string :as string]))
 
