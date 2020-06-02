@@ -2,6 +2,16 @@
 
 A ClojureScript library for programmatically building GraphQL query strings. Inlcudes a "micro" DSL for constructing more readable queries.
 
+## Running the tests
+
+We run tests via [lein-doo](https://github.com/bensu/doo) and [phantomjs](https://phantomjs.org).
+
+To execute the tests, run
+
+```
+lein doo phantom test once
+```
+
 ## Usage
 
 Some examples for constructing queries using `active-graphql`:
