@@ -1,4 +1,4 @@
-(defproject active-graphql "0.2.0-SNAPSHOT"
+(defproject de.active-group/active-graphql "0.2.0"
   :description "A ClojureScript library for programmatically building GraphQL query strings"
   :url "https://github.com/active-group/active-graphql"
   :license {:name "Eclipse Public License"
