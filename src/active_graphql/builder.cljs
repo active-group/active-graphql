@@ -36,6 +36,7 @@ importantly, provides the functions `field`, `query` and `mutation` (refer to
   * a keyword or string
   * a vector or `[alias field-name]` (i.e. `[:id :userId]`)
   * a `active-graphql/field`
+  * a `active-graphql/inline-fragment`
 
   Converts `fields` recursively."
   [args]
@@ -45,6 +46,10 @@ importantly, provides the functions `field`, `query` and `mutation` (refer to
                             (g/atomic-field (name alias) (name field) nil))
             (g/field? key)
             key
+
+            (g/inline-fragment? key)
+            key
+
             :else (g/atomic-field nil (name key) nil)))
         args))
 
@@ -72,17 +77,23 @@ importantly, provides the functions `field`, `query` and `mutation` (refer to
 
 (defn field
   "Takes the name of a graphql query or mutation `the-name` and a number of
-  args. `args` can be elements of type keyword, string or `field`s themselves.
+  args. `args` can be elements of type keyword, string, inline-fragments or `field`s themselves.
   If `the-name` is a vector, it's first element is the alias for the query, the
   second one the 'real' name."
   [the-name & args]
-  (let [[sel args] (if (and (not (g/field? (first args))) (map? (first args)))
+  (let [[sel args] (if (and (not (g/field? (first args)))
+                            (not (g/inline-fragment? (first args)))
+                            (map? (first args)))
                      [(first args) (rest args)]
                      [nil args])
         [alias nom] (if (vector? the-name)
                       [(name (first the-name))  (name (second the-name))]
                       [nil (name the-name) ])]
     (g/field* alias nom (select sel) (project args))))
+
+(defn inline-fragment
+  [type & selections]
+  (g/inline-fragment* type (project selections)))
 
 (defn request
   "`request` takes a graphql `document` and returns a stringified version ready

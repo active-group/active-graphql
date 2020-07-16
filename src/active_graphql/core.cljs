@@ -42,6 +42,13 @@
    directives field-directives
    selection-set field-selection-set])
 
+(r/define-record-type inline-fragment
+  (make-inline-fragment type directives selection-set)
+  inline-fragment?
+  [type inline-fragment-type
+   directives inline-fragment-directives
+   selection-set inline-fragment-selection-set])
+
 (r/define-record-type int-argument
   (make-int-argument arg) int-argument?
   [arg int-argument-arg])
@@ -115,6 +122,9 @@
                                                               nil
                                                               selection-list)))
 
+(defn inline-fragment* [type selection-list]
+  (make-inline-fragment type nil selection-list))
+
 (defn atomic-field
   [alias name arguments]
   (field* alias name arguments nil))
@@ -168,10 +178,12 @@
   (str (argument-name argument) ": " (print-arg-value (argument-value argument)) ))
 
 (declare print-field)
+(declare print-inline-fragment)
 (defn print-selection
   [selection]
   (cond
-    (field? selection) (print-field selection)))
+    (field? selection) (print-field selection)
+    (inline-fragment? selection) (print-inline-fragment selection)))
 
 (defn print-selection-set
   [selection-set]
@@ -192,6 +204,14 @@
      (str "(" (string/join "," (map print-argument (field-arguments field))) ")") )
    " "
    (print-selection-set (field-selection-set field))))
+
+(defn print-inline-fragment [inline-fragment]
+  (let [type (inline-fragment-type inline-fragment)
+        selection-set (inline-fragment-selection-set inline-fragment)]
+
+    (str "... on " type " "
+         (print-selection-set selection-set))
+    ))
 
 (defn print-operation-type-query
   [operation-type-query]

@@ -154,3 +154,7 @@
          (t/is (= expectation
                   (b/field [:alias-foo :foo]))))))
 
+(t/deftest field-with-inline-fragment
+  (let [expectation (c/make-inline-fragment "foo-type" nil (list (c/make-field nil "foo-name" '() nil [])))]
+    (t/testing "using inline-fragments"
+      (t/is (= expectation (b/inline-fragment "foo-type" (b/field :foo-name)))))))
