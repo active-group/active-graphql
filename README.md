@@ -1,6 +1,6 @@
 # active-graphql
 
-A ClojureScript library for programmatically building GraphQL query strings. Inlcudes a "micro" DSL for constructing more readable queries.
+A ClojureScript library for programmatically building GraphQL query strings. Includes a "micro" DSL for constructing more readable queries.
 
 ## Running the tests
 
