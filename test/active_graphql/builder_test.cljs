@@ -10,8 +10,8 @@
     (t/is (= (c/boolean-arg true) (b/wrap-in-graphql-arg true)))
     (t/is (= (c/boolean-arg false) (b/wrap-in-graphql-arg false)))
     (t/is (= (c/string-arg "foobar") (b/wrap-in-graphql-arg "foobar")))
-    (t/is (= (c/string-arg "{\"foo\":\"bar\"}") (b/wrap-in-graphql-arg {:foo "bar"})))
     (t/is (= (c/list-arg (list (c/int-arg 23) (c/int-arg 42))) (b/wrap-in-graphql-arg (list 23 42 ))))
+    (t/is (= (c/input-object-arg {:foo (c/int-arg 1) :bar (c/int-arg 2)}) (b/wrap-in-graphql-arg {:foo 1 :bar 2})))
     )
   (t/testing "with invalid arguments, it should throw a js error with the correct message"
     (t/testing "testing with nil"
@@ -158,3 +158,25 @@
   (let [expectation (c/make-inline-fragment "foo-type" nil (list (c/make-field nil "foo-name" '() nil [])))]
     (t/testing "using inline-fragments"
       (t/is (= expectation (b/inline-fragment "foo-type" (b/field :foo-name)))))))
+
+;; some tests for resulting strings.
+(t/deftest simple-request-test
+  (t/testing "with one field"
+    (t/is (= (b/request (b/query (b/field :foo :bar)))
+             "{\"query\":\"query  { foo { bar  } }\"}") )))
+
+(t/deftest simple-argument-test
+  (t/testing "with argument"
+    (t/is (= (b/request (b/mutation (b/field :foo {:obj "1"})))
+             "{\"query\":\"mutation  { foo(obj: \\\"1\\\")  }\"}"))))
+
+(t/deftest simple-input-object-test
+  (t/testing "with simple input object argument"
+    (t/is (= (b/request (b/mutation (b/field :foo {:obj {:v "1"}})))
+             "{\"query\":\"mutation  { foo(obj: {v: \\\"1\\\"})  }\"}"))))
+
+(t/deftest simple-input-object-test-with-enum
+  (t/testing "with simple input object argument with enum"
+    (t/is (= (b/request (b/mutation (b/field :foo {:obj {:v :Klient}})))
+             "{\"query\":\"mutation  { foo(obj: {v: Klient})  }\"}"))))
+

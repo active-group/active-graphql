@@ -53,6 +53,10 @@
   (make-int-argument arg) int-argument?
   [arg int-argument-arg])
 
+(r/define-record-type nil-argument
+  (make-nil-argument) nil-argument?
+  [])
+
 (r/define-record-type float-argument
   (make-float-argument arg) float-argument?
   [arg float-argument-arg])
@@ -68,10 +72,20 @@
    boolean-argument?
    [arg boolean-argument-arg])
 
+(r/define-record-type enum-argument
+    (make-enum-argument arg)
+    enum-argument?
+    [arg enum-argument-arg])
+
 (r/define-record-type list-argument
   (make-list-argument arg)
   list-argument?
   [arg list-argument-arg])
+
+(r/define-record-type input-object-argument
+  (make-input-object-argument arg)
+  input-object-argument?
+  [arg input-object-argument-arg])
 
 (r/define-record-type argument
   (make-argument a-name value)
@@ -93,6 +107,10 @@
   [arg]
   (make-int-argument arg))
 
+(defn nil-arg
+  []
+  (make-nil-argument))
+
 (defn float-arg
   [arg]
   (make-float-argument arg))
@@ -101,9 +119,17 @@
   [arg]
   (make-string-argument arg))
 
+(defn enum-arg
+  [arg]
+  (make-enum-argument arg))
+
 (defn list-arg
   [arg]
   (make-list-argument arg))
+
+(defn input-object-arg
+  [arg]
+  (make-input-object-argument arg))
 
 
 (defn boolean-arg
@@ -163,6 +189,7 @@
 (defn print-arg-value
   [arg-value]
   (cond
+    (nil-argument? arg-value) (stringify nil)
     (int-argument? arg-value) (if arg-value (str (int-argument-arg arg-value)) "")
     (float-argument? arg-value) (if arg-value (str (float-argument-arg arg-value)) "")
     (string-argument? arg-value) (if arg-value (stringify (string-argument-arg arg-value)))
@@ -171,6 +198,16 @@
                                                (clojure.string/join ","
                                                                     (map print-arg-value (list-argument-arg arg-value)))
                                      "]"))
+    (enum-argument? arg-value) (name (enum-argument-arg arg-value))
+
+    (input-object-argument? arg-value)
+    (str "{"
+         (apply str
+                (clojure.string/join "," (map (fn [[key value]]
+                                                (str (name key) ": "
+                                                     (print-arg-value value)))
+                                              (input-object-argument-arg arg-value))))
+         "}")
     ))
 
 (defn print-argument

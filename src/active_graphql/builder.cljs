@@ -5,18 +5,19 @@ importantly, provides the functions `field`, `query` and `mutation` (refer to
   (:require [active-graphql.core :as g]))
 
 (defn wrap-in-graphql-arg
-  "Takes a `value` in `#{int float boolean string map}` and wraps it in a
-  graphql value. When encountering a map, convert it into a Javascript object
-  and [[active-grpahl.core/stringify]] it."
+  "Takes a `value` in `#{int float boolean string map seq keyword}` and wraps it in a
+  graphql value."
   [value]
   (cond
-    ;; FIXME: Nil is allow according to graphql-spec, isn't it?  http://facebook.github.io/graphql/October2016/#sec-Null-Value
-    (nil? value) (throw (js/Error. "wrap-in-graphql-arg: expected valid value but got nil"))
+    (nil? value) (g/nil-arg)
     (integer? value) (g/int-arg value)
     (float? value) (g/float-arg value)
     (boolean? value) (g/boolean-arg value)
     (string? value) (g/string-arg value)
-    (map? value) (g/string-arg (g/stringify value))
+    (keyword? value) (g/enum-arg value)
+    (map? value) (g/input-object-arg (into {} (map (fn [[k v]]
+                                                     [k (wrap-in-graphql-arg v)]
+                                                     )) value))
     (seq? value) (g/list-arg (map wrap-in-graphql-arg value))
     :else (throw (js/Error. (str "wrap-in-graphql-arg: value of unsupported type (got " value ")")))))
 
