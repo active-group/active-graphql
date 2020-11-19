@@ -3,9 +3,8 @@
   :url "https://github.com/active-group/active-graphql"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[org.clojure/clojure "1.9.0"]
-                 [org.clojure/clojurescript "1.10.439"]
-                 [de.active-group/active-clojure  "0.37.0" :exclusions [[active-clojure]]]]
+  :dependencies [[org.clojure/clojurescript "1.10.439"]
+                 [de.active-group/active-clojure "0.37.1" :exclusions [[active-clojure]]]]
 
   :plugins [[lein-cljsbuild "1.1.6"]
             [lein-doo "0.1.10"]]
