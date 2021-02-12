@@ -5,7 +5,7 @@ importantly, provides the functions `field`, `query` and `mutation` (refer to
   (:require [active-graphql.core :as g]))
 
 (defn wrap-in-graphql-arg
-  "Takes a `value` in `#{int float boolean string map seq keyword}` and wraps it in a
+  "Takes a `value` in `#{int float boolean string map coll keyword}` and wraps it in a
   graphql value."
   [value]
   (cond
@@ -18,7 +18,7 @@ importantly, provides the functions `field`, `query` and `mutation` (refer to
     (map? value) (g/input-object-arg (into {} (map (fn [[k v]]
                                                      [k (wrap-in-graphql-arg v)]
                                                      )) value))
-    (seq? value) (g/list-arg (map wrap-in-graphql-arg value))
+    (and (not (map? value)) (coll? value))  (g/list-arg (map wrap-in-graphql-arg value)) ;; arrays, vectors, lists, ... make them all to list-arg
     :else (throw (js/Error. (str "wrap-in-graphql-arg: value of unsupported type (got " value ")")))))
 
 (defn select
